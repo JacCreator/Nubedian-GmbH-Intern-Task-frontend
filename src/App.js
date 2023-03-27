@@ -1,4 +1,6 @@
 import "./App.css";
+import ResponsiveAppBar from "./components/Bar";
+import CollapsibleTable from "./components/Table";
 import useFetch from "./useFetch";
 
 function App() {
@@ -9,7 +11,8 @@ function App() {
 
   return (
     <div className="App">
-      <h1>{data?.socket.name}</h1>
+      <ResponsiveAppBar />
+      <CollapsibleTable />
     </div>
   );
 }
