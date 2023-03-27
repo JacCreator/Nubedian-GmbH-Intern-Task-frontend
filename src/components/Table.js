@@ -16,29 +16,27 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-function createData(name, calories, fat) {
+function createData(name, calories, fat, history) {
   return {
     name,
     calories,
     fat,
-    history: [
-      {
-        date: "2020-01-05",
-        customerId: "11091700",
-        amount: 3,
-      },
-      {
-        date: "2020-01-02",
-        customerId: "Anonymous",
-        amount: 1,
-      },
-    ],
+    history: Array.isArray(history)
+      ? history.map((item) => ({
+          date: item.date,
+          customerId: item.customerId,
+          amount: item.amount,
+          threads: item.threads,
+          tdp: item.tdp,
+          price: item.price,
+        }))
+      : [],
   };
 }
 
 function Row(props) {
   const { row } = props;
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <React.Fragment>
@@ -59,19 +57,21 @@ function Row(props) {
         <TableCell align="left">{row.fat}</TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={3}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Typography variant="h6" gutterBottom component="div">
-                History
+                Details
               </Typography>
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Customer</TableCell>
-                    <TableCell align="right">Amount</TableCell>
-                    <TableCell align="right">Total price ($)</TableCell>
+                    <TableCell>Base clockspeed</TableCell>
+                    <TableCell>Turbo clockspeed</TableCell>
+                    <TableCell align="left">Number of cores</TableCell>
+                    <TableCell align="left">Number of threads</TableCell>
+                    <TableCell align="left">TDP</TableCell>
+                    <TableCell align="left">EUR</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -81,10 +81,10 @@ function Row(props) {
                         {historyRow.date}
                       </TableCell>
                       <TableCell>{historyRow.customerId}</TableCell>
-                      <TableCell align="right">{historyRow.amount}</TableCell>
-                      <TableCell align="right">
-                        {Math.round(historyRow.amount * row.price * 100) / 100}
-                      </TableCell>
+                      <TableCell align="left">{historyRow.amount}</TableCell>
+                      <TableCell align="left">{historyRow.threads}</TableCell>
+                      <TableCell align="left">{historyRow.tdp}</TableCell>
+                      <TableCell align="left">{historyRow.price}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -104,11 +104,12 @@ Row.propTypes = {
     history: PropTypes.arrayOf(
       PropTypes.shape({
         amount: PropTypes.number.isRequired,
-        customerId: PropTypes.string.isRequired,
-        date: PropTypes.string.isRequired,
+        customerId: PropTypes.number.isRequired,
+        date: PropTypes.number.isRequired,
+        threads: PropTypes.number.isRequired,
+        tdp: PropTypes.number.isRequired,
       })
     ).isRequired,
-    name: PropTypes.string.isRequired,
   }).isRequired,
 };
 
@@ -130,7 +131,18 @@ export default function CollapsibleTable() {
   const rows = [];
 
   cpu.map((item, index) => {
-    rows.push(createData(item.brand, item.model, item.socket.name));
+    const history = [
+      {
+        date: item.clockspeedBase,
+        customerId: item.clockspeedTurbo,
+        amount: item.coresNum,
+        threads: item.threasdNum,
+        tdp: item.tdp,
+        price: item.price,
+      },
+    ];
+
+    rows.push(createData(item.brand, item.model, item.socket.name, history));
   });
 
   return (
