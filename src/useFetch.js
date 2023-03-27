@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+// CUSTOM HOOK
+
 function useFetch(url) {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [erorr, setError] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -21,7 +23,7 @@ function useFetch(url) {
       });
   }, [url]);
 
-  return { data, loading, erorr };
+  return { data, loading, error };
 }
 
 export default useFetch;

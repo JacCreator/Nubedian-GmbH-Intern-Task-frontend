@@ -4,10 +4,7 @@ import CollapsibleTable from "./components/Table";
 import useFetch from "./useFetch";
 
 function App() {
-  const { data, loading, erorr } = useFetch("http://localhost:8080/cpu/get/2");
-
-  if (loading) return <h1> LOADING... </h1>;
-  if (erorr) console.log(erorr);
+  const { loading, error } = useFetch("http://localhost:8080/cpu/get/2");
 
   return (
     <div className="App">

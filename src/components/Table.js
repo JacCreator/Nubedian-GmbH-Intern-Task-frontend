@@ -13,6 +13,8 @@ import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function createData(name, calories, fat) {
   return {
@@ -53,8 +55,8 @@ function Row(props) {
         <TableCell component="th" scope="row">
           {row.name}
         </TableCell>
-        <TableCell align="right">{row.calories}</TableCell>
-        <TableCell align="right">{row.fat}</TableCell>
+        <TableCell align="left">{row.calories}</TableCell>
+        <TableCell align="left">{row.fat}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={3}>
@@ -97,9 +99,8 @@ function Row(props) {
 
 Row.propTypes = {
   row: PropTypes.shape({
-    calories: PropTypes.number.isRequired,
-    carbs: PropTypes.number.isRequired,
-    fat: PropTypes.number.isRequired,
+    calories: PropTypes.string.isRequired,
+    fat: PropTypes.string.isRequired,
     history: PropTypes.arrayOf(
       PropTypes.shape({
         amount: PropTypes.number.isRequired,
@@ -108,26 +109,39 @@ Row.propTypes = {
       })
     ).isRequired,
     name: PropTypes.string.isRequired,
-    price: PropTypes.number.isRequired,
-    protein: PropTypes.number.isRequired,
   }).isRequired,
 };
 
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0),
-  createData("Ice cream sandwich", 237, 9.0),
-];
-
 export default function CollapsibleTable() {
+  const [cpu, setCpu] = useState([]);
+
+  const getCpuData = () => {
+    try {
+      axios.get("http://localhost:8080/cpu/get-all").then((res) => {
+        setCpu(res.data);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => getCpuData(), []);
+
+  const rows = [];
+
+  cpu.map((item, index) => {
+    rows.push(createData(item.brand, item.model, item.socket.name));
+  });
+
   return (
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
         <TableHead>
           <TableRow>
             <TableCell />
-            <TableCell>Dessert (100g serving)</TableCell>
-            <TableCell align="right">Calories</TableCell>
-            <TableCell align="right">Fat&nbsp;(g)</TableCell>
+            <TableCell>Brand</TableCell>
+            <TableCell align="left">Model</TableCell>
+            <TableCell align="left">Socket</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
