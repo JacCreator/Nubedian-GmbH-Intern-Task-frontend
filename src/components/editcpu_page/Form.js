@@ -11,8 +11,11 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
-export default function AddressForm() {
+export default function AddressForm(props) {
+  const id = props.id;
+
   const [age, setAge] = React.useState("");
 
   const handleChange = (event) => {
@@ -25,7 +28,6 @@ export default function AddressForm() {
   const getSocketData = () => {
     try {
       axios.get("http://localhost:8080/socket/get-all").then((res) => {
-        console.log(res.data);
         setSocket(res.data);
       });
     } catch (e) {
@@ -34,12 +36,26 @@ export default function AddressForm() {
   };
 
   //fetch one cpu
-  const [cpu, setCpu] = useState([]);
+  //const [cpu, setCpu] = useState({});
+  const [cpu, setCpu] = useState({
+    // id: 1,
+    // brand: "Amd",
+    // model: "Core i5-13500",
+    // clockspeedBase: 2.5,
+    // clockspeedTurbo: 4.8,
+    // coresNum: 14,
+    // threadsNum: 20,
+    // tdp: 75.0,
+    // price: 1319,
+    // socket: {
+    //   id: 2,
+    //   name: "Socket AM4",
+    // },
+  });
 
   const getCpuData = () => {
     try {
-      axios.get("http://localhost:8080/cpu/get/1").then((res) => {
-        console.log(res.data);
+      axios.get(`http://localhost:8080/cpu/get/${id}`).then((res) => {
         setCpu(res.data);
       });
     } catch (e) {
@@ -47,13 +63,19 @@ export default function AddressForm() {
     }
   };
 
-  useEffect(() => (getSocketData(), getCpuData()), []);
+  useEffect(() => {
+    getSocketData();
+    getCpuData();
+  }, []);
 
-  const categories = [];
+  function updateCpu() {
+    console.log(cpu);
+    console.log(id);
+  }
 
-  socket.map((item, index) => {
-    categories.push(item.name);
-  });
+  const handleEdit = (name, newBrand) => {
+    setCpu({ ...cpu, [name]: newBrand });
+  };
 
   return (
     <React.Fragment>
@@ -84,7 +106,7 @@ export default function AddressForm() {
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.brand}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -101,12 +123,15 @@ export default function AddressForm() {
             <Grid item xs={12} sm={10}>
               <TextField
                 required
-                id="outlined-multiline-static"
+                id="model"
+                name="model"
                 multiline
                 fullWidth
                 rows={3}
+                autoComplete="off"
+                variant="outlined"
                 value={cpu.model}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -123,15 +148,14 @@ export default function AddressForm() {
             <Grid item xs={12} sm={10}>
               <TextField
                 required
-                id="cores"
-                name="cores"
-                //label="Cores"
+                id="coresNum"
+                name="coresNum"
                 fullWidth
                 size="small"
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.coresNum}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -148,14 +172,14 @@ export default function AddressForm() {
             <Grid item xs={12} sm={10}>
               <TextField
                 required
-                id="threads"
-                name="threads"
+                id="threadsNum"
+                name="threadsNum"
                 fullWidth
                 size="small"
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.threadsNum}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -172,14 +196,14 @@ export default function AddressForm() {
             <Grid item xs={12} sm={4}>
               <TextField
                 required
-                id="price"
-                name="price"
+                id="clockspeedBase"
+                name="clockspeedBase"
                 fullWidth
                 size="small"
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.clockspeedBase}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -196,14 +220,14 @@ export default function AddressForm() {
             <Grid item xs={12} sm={4}>
               <TextField
                 required
-                id="price"
-                name="price"
+                id="clockspeedTurbo"
+                name="clockspeedTurbo"
                 fullWidth
                 size="small"
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.clockspeedTurbo}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
 
@@ -221,15 +245,14 @@ export default function AddressForm() {
             <Grid item xs={12} sm={10}>
               <TextField
                 required
-                id="cores"
-                name="cores"
-                //label="Cores"
+                id="tdp"
+                name="tdp"
                 fullWidth
                 size="small"
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.tdp}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
 
@@ -247,16 +270,29 @@ export default function AddressForm() {
             <Grid item xs={12} sm={4}>
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Socket</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  label="Socket"
-                  onChange={handleChange}
-                >
-                  {categories.map((item) => (
-                    <MenuItem value={item}>{item}</MenuItem>
-                  ))}
-                </Select>
+                {cpu.id !== null && (
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    label="Socket"
+                    name="socket"
+                    defaultValue="asdf"
+                    onChange={(e) => {
+                      setCpu({
+                        ...cpu,
+                        socket: e.target.value.item,
+                      });
+                    }}
+                  >
+                    {socket.map((item, index) => {
+                      return (
+                        <MenuItem value={{ item }} key={index}>
+                          {item.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -280,7 +316,7 @@ export default function AddressForm() {
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.price}
-                onChange={(e) => setCpu(e.target.value)}
+                onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
 
@@ -288,8 +324,12 @@ export default function AddressForm() {
             <Grid item xs={12} sm={6} />
             <Grid item xs={12} sm={5} />
             <Grid item xs={12} sm={4}>
-              <Button variant="contained" sx={{ background: "#2E3B55" }}>
-                Save
+              <Button
+                onClick={updateCpu}
+                variant="contained"
+                sx={{ background: "#2E3B55" }}
+              >
+                Update
               </Button>
             </Grid>
             <Grid item xs={12} sm={5} />

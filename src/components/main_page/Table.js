@@ -135,8 +135,8 @@ function Row(props) {
           style={{ paddingTop: 20 }}
           size="small"
           component={Link}
-          to="/edit-cpu"
-          //onClick={() => handleEdit(row.id, row.name)}
+          to={`/edit-cpu/${row.id}`}
+          onClick={() => console.warn(row.id)}
         >
           <BorderColorIcon fontSize="small" />
         </IconButton>
