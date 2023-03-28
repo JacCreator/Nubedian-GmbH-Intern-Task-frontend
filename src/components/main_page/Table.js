@@ -18,8 +18,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-function createData(name, calories, fat, history) {
+function createData(id, name, calories, fat, history) {
   return {
+    id,
     name,
     calories,
     fat,
@@ -36,9 +37,81 @@ function createData(name, calories, fat, history) {
   };
 }
 
+export default function CollapsibleTable() {
+  const [cpu, setCpu] = useState([]);
+
+  const getCpuData = () => {
+    try {
+      axios.get("http://localhost:8080/cpu/get-all").then((res) => {
+        setCpu(res.data);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => getCpuData(), []);
+
+  const rows = [];
+
+  cpu.map((item, index) => {
+    const history = [
+      {
+        date: item.clockspeedBase,
+        customerId: item.clockspeedTurbo,
+        amount: item.coresNum,
+        threads: item.threadsNum,
+        tdp: item.tdp,
+        price: item.price,
+      },
+    ];
+
+    rows.push(
+      createData(item.id, item.brand, item.model, item.socket.name, history)
+    );
+  });
+
+  return (
+    <TableContainer component={Paper}>
+      <Table aria-label="collapsible table">
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell>Brand</TableCell>
+            <TableCell align="left">Model</TableCell>
+            <TableCell align="left">Socket</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row) => (
+            <Row key={row.name} row={row} state={{ data: cpu }} />
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = useState(false);
+  const [cpu, setCpu] = useState([]);
+
+  const getCpuData = () => {
+    try {
+      axios.get("http://localhost:8080/cpu/get-all").then((res) => {
+        setCpu(res.data);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => getCpuData(), []);
+
+  // const handleEdit = (id, brand) = {
+
+  // }
 
   return (
     <React.Fragment>
@@ -63,6 +136,7 @@ function Row(props) {
           size="small"
           component={Link}
           to="/edit-cpu"
+          //onClick={() => handleEdit(row.id, row.name)}
         >
           <BorderColorIcon fontSize="small" />
         </IconButton>
@@ -123,56 +197,3 @@ Row.propTypes = {
     ).isRequired,
   }).isRequired,
 };
-
-export default function CollapsibleTable() {
-  const [cpu, setCpu] = useState([]);
-
-  const getCpuData = () => {
-    try {
-      axios.get("http://localhost:8080/cpu/get-all").then((res) => {
-        setCpu(res.data);
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  useEffect(() => getCpuData(), []);
-
-  const rows = [];
-
-  cpu.map((item, index) => {
-    const history = [
-      {
-        date: item.clockspeedBase,
-        customerId: item.clockspeedTurbo,
-        amount: item.coresNum,
-        threads: item.threadsNum,
-        tdp: item.tdp,
-        price: item.price,
-      },
-    ];
-
-    rows.push(createData(item.brand, item.model, item.socket.name, history));
-  });
-
-  return (
-    <TableContainer component={Paper}>
-      <Table aria-label="collapsible table">
-        <TableHead>
-          <TableRow>
-            <TableCell />
-            <TableCell>Brand</TableCell>
-            <TableCell align="left">Model</TableCell>
-            <TableCell align="left">Socket</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <Row key={row.name} row={row} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-}
