@@ -36,7 +36,6 @@ export default function AddressForm(props) {
   };
 
   //fetch one cpu
-  //const [cpu, setCpu] = useState({});
   const [cpu, setCpu] = useState({
     // id: 1,
     // brand: "Amd",
@@ -70,7 +69,9 @@ export default function AddressForm(props) {
 
   function updateCpu() {
     console.log(cpu);
-    console.log(id);
+    axios
+      .put(`http://localhost:8080/cpu/update/${id}`, { cpu })
+      .catch((err) => console.log(err));
   }
 
   const handleEdit = (name, newBrand) => {
@@ -325,7 +326,7 @@ export default function AddressForm(props) {
             <Grid item xs={12} sm={5} />
             <Grid item xs={12} sm={4}>
               <Button
-                onClick={updateCpu}
+                onClick={() => updateCpu(id)}
                 variant="contained"
                 sx={{ background: "#2E3B55" }}
               >
