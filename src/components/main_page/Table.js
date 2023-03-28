@@ -13,7 +13,9 @@ import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import BorderColorIcon from "@mui/icons-material/BorderColor";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 function createData(name, calories, fat, history) {
@@ -55,6 +57,15 @@ function Row(props) {
         </TableCell>
         <TableCell align="left">{row.calories}</TableCell>
         <TableCell align="left">{row.fat}</TableCell>
+        <IconButton
+          aria-label="edit"
+          style={{ paddingTop: 20 }}
+          size="small"
+          component={Link}
+          to="/edit-cpu"
+        >
+          <BorderColorIcon fontSize="small" />
+        </IconButton>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -136,7 +147,7 @@ export default function CollapsibleTable() {
         date: item.clockspeedBase,
         customerId: item.clockspeedTurbo,
         amount: item.coresNum,
-        threads: item.threasdNum,
+        threads: item.threadsNum,
         tdp: item.tdp,
         price: item.price,
       },
