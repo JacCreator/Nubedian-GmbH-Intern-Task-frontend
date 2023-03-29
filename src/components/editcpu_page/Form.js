@@ -11,16 +11,12 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function AddressForm(props) {
   const id = props.id;
 
   const [age, setAge] = React.useState("");
-
-  const handleChange = (event) => {
-    setAge(event.target.value);
-  };
 
   const [socket, setSocket] = useState([]);
 
@@ -37,19 +33,19 @@ export default function AddressForm(props) {
 
   //fetch one cpu
   const [cpu, setCpu] = useState({
-    // id: 1,
-    // brand: "Amd",
-    // model: "Core i5-13500",
-    // clockspeedBase: 2.5,
-    // clockspeedTurbo: 4.8,
-    // coresNum: 14,
-    // threadsNum: 20,
-    // tdp: 75.0,
-    // price: 1319,
-    // socket: {
-    //   id: 2,
-    //   name: "Socket AM4",
-    // },
+    id: 1,
+    brand: "Amd",
+    model: "Core i5-13500",
+    clockspeedBase: 2.5,
+    clockspeedTurbo: 4.8,
+    coresNum: 14,
+    threadsNum: 20,
+    tdp: 75.0,
+    price: 1319,
+    socket: {
+      id: 2,
+      name: "Socket AM4",
+    },
   });
 
   const getCpuData = () => {
@@ -67,15 +63,22 @@ export default function AddressForm(props) {
     getCpuData();
   }, []);
 
-  function updateCpu() {
-    console.log(cpu);
-    axios
-      .put(`http://localhost:8080/cpu/update/${id}`, { cpu })
-      .catch((err) => console.log(err));
+  const navigate = useNavigate();
+  const goBack = () => {
+    navigate(-1);
+  };
+
+  async function updateCpu() {
+    try {
+      await axios.put(`http://localhost:8080/cpu/update/${id}`, cpu);
+      goBack();
+    } catch (e) {
+      console.log(e);
+    }
   }
 
-  const handleEdit = (name, newBrand) => {
-    setCpu({ ...cpu, [name]: newBrand });
+  const handleEdit = (name, value) => {
+    setCpu({ ...cpu, [name]: value });
   };
 
   return (
@@ -106,7 +109,7 @@ export default function AddressForm(props) {
                 size="small"
                 autoComplete="off"
                 variant="outlined"
-                value={cpu.brand}
+                value={cpu?.brand ?? ""}
                 onChange={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
