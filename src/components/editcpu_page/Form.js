@@ -11,16 +11,16 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import axios from "axios";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
 export default function AddressForm(props) {
+  // fetch the cpu's id number from the url
   const id = props.id;
 
-  const [age, setAge] = React.useState("");
-
-  const [socket, setSocket] = useState([]);
-
+  // HOOKS SECTION ---------------------------------------------------
   // fetch all sockets
+  const [socket, setSocket] = useState([]);
   const getSocketData = () => {
     try {
       axios.get("http://localhost:8080/socket/get-all").then((res) => {
@@ -31,23 +31,8 @@ export default function AddressForm(props) {
     }
   };
 
-  //fetch one cpu
-  const [cpu, setCpu] = useState({
-    id: 1,
-    brand: "Amd",
-    model: "Core i5-13500",
-    clockspeedBase: 2.5,
-    clockspeedTurbo: 4.8,
-    coresNum: 14,
-    threadsNum: 20,
-    tdp: 75.0,
-    price: 1319,
-    socket: {
-      id: 2,
-      name: "Socket AM4",
-    },
-  });
-
+  // fetch the exact cpu
+  const [cpu, setCpu] = useState({});
   const getCpuData = () => {
     try {
       axios.get(`http://localhost:8080/cpu/get/${id}`).then((res) => {
@@ -62,24 +47,55 @@ export default function AddressForm(props) {
     getSocketData();
     getCpuData();
   }, []);
+  // ------------------------------------------------------------------
 
+  // SUPPORT FUNCTIONS ------------------------------------------------
   const navigate = useNavigate();
   const goBack = () => {
     navigate(-1);
   };
 
+  function timeout(delay) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, delay);
+    });
+  }
+  // ------------------------------------------------------------------
+
+  // EDIT FUNCTIONALITY ------------------------------------------------
   async function updateCpu() {
     try {
-      await axios.put(`http://localhost:8080/cpu/update/${id}`, cpu);
-      goBack();
+      await axios
+        .put(`http://localhost:8080/cpu/update/${id}`, cpu)
+        .then({ alert });
+      // debugging purpose
+      console.log(cpu);
+      // -----------------
     } catch (e) {
       console.log(e);
     }
   }
 
+  const alert = () => {
+    Swal.fire({
+      title: "Success!",
+      width: 600,
+      padding: "3em",
+      color: "#716add",
+      backdrop: `
+        rgba(0,0,123,0.4)
+      `,
+    }).then(goBack);
+  };
+
   const handleEdit = (name, value) => {
     setCpu({ ...cpu, [name]: value });
   };
+
+  const handleEditForSelect = (value) => {
+    setCpu({ ...cpu, socket: value.item });
+  };
+  // ------------------------------------------------------------------
 
   return (
     <React.Fragment>
@@ -231,7 +247,7 @@ export default function AddressForm(props) {
                 autoComplete="off"
                 variant="outlined"
                 value={cpu.clockspeedTurbo}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                onClick={(e) => handleEdit(e.target.name, e.target.value)}
               />
             </Grid>
 
@@ -273,20 +289,12 @@ export default function AddressForm(props) {
             </Grid>
             <Grid item xs={12} sm={4}>
               <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">Socket</InputLabel>
                 {cpu.id !== null && (
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Socket"
+                    labelId="socketLabel"
+                    id="socket"
                     name="socket"
-                    defaultValue="asdf"
-                    onChange={(e) => {
-                      setCpu({
-                        ...cpu,
-                        socket: e.target.value.item,
-                      });
-                    }}
+                    onChange={(e) => handleEditForSelect(e.target.value)}
                   >
                     {socket.map((item, index) => {
                       return (
@@ -329,7 +337,7 @@ export default function AddressForm(props) {
             <Grid item xs={12} sm={5} />
             <Grid item xs={12} sm={4}>
               <Button
-                onClick={() => updateCpu(id)}
+                onClick={alert} //() => updateCpu(id)}
                 variant="contained"
                 sx={{ background: "#2E3B55" }}
               >
