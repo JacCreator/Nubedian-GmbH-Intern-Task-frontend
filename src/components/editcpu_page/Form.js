@@ -13,6 +13,9 @@ import Button from "@mui/material/Button";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import * as yup from "yup";
+import { Formik, FormikProps } from "formik";
+import { schema } from "../../validations/CpuValidation";
 
 export default function AddressForm(props) {
   // fetch the cpu's id number from the url
@@ -55,27 +58,6 @@ export default function AddressForm(props) {
     navigate(-1);
   };
 
-  function timeout(delay) {
-    return new Promise(function (resolve) {
-      setTimeout(resolve, delay);
-    });
-  }
-  // ------------------------------------------------------------------
-
-  // EDIT FUNCTIONALITY ------------------------------------------------
-  async function updateCpu() {
-    try {
-      await axios
-        .put(`http://localhost:8080/cpu/update/${id}`, cpu)
-        .then({ alert });
-      // debugging purpose
-      console.log(cpu);
-      // -----------------
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
   const alert = () => {
     Swal.fire({
       title: "Success!",
@@ -87,266 +69,322 @@ export default function AddressForm(props) {
       `,
     }).then(goBack);
   };
+  // ------------------------------------------------------------------
+
+  // EDIT FUNCTIONALITY -----------------------------------------------
+  async function updateCpu() {
+    try {
+      await axios
+        .put(`http://localhost:8080/cpu/update/${id}`, cpu)
+        .then(console.log(cpu));
+    } catch (e) {
+      console.log(e);
+    }
+    alert();
+  }
 
   const handleEdit = (name, value) => {
     setCpu({ ...cpu, [name]: value });
+    setError(null);
   };
 
   const handleEditForSelect = (value) => {
     setCpu({ ...cpu, socket: value.item });
+    setError(null);
   };
+  // ------------------------------------------------------------------
+
+  // VALIDATION -------------------------------------------------------
+  const [error, setError] = useState(false);
+  const [errorMess, setErrorMess] = useState("");
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const regex = new RegExp("^[A-Z][a-z]*$");
+    if (!cpu.brand) {
+      setError(true);
+      setErrorMess("Brand is required.");
+    } else if (!regex.test(cpu.brand)) {
+      setError(true);
+      setErrorMess("Brand should start with a capital letter and be a word");
+    }
+  };
+
+  const validate = () => {};
+
   // ------------------------------------------------------------------
 
   return (
     <React.Fragment>
       <Paper elevation={3} sx={{ marginRight: "15%", marginLeft: "15%" }}>
-        <Box sx={{ padding: 5 }}>
-          <Typography variant="h6" gutterBottom sx={{ paddingBottom: 5 }}>
-            Edit table record
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Brand
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <TextField
-                required
-                id="brand"
-                name="brand"
-                fullWidth
-                size="small"
-                autoComplete="off"
-                variant="outlined"
-                value={cpu?.brand ?? ""}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Model
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <TextField
-                required
-                id="model"
-                name="model"
-                multiline
-                fullWidth
-                rows={3}
-                autoComplete="off"
-                variant="outlined"
-                value={cpu.model}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Cores
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <TextField
-                required
-                id="coresNum"
-                name="coresNum"
-                fullWidth
-                size="small"
-                autoComplete="off"
-                variant="outlined"
-                value={cpu.coresNum}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Threads
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <TextField
-                required
-                id="threadsNum"
-                name="threadsNum"
-                fullWidth
-                size="small"
-                autoComplete="off"
-                variant="outlined"
-                value={cpu.threadsNum}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Clockspeed
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                required
-                id="clockspeedBase"
-                name="clockspeedBase"
-                fullWidth
-                size="small"
-                autoComplete="off"
-                variant="outlined"
-                value={cpu.clockspeedBase}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Turbo clock
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                required
-                id="clockspeedTurbo"
-                name="clockspeedTurbo"
-                fullWidth
-                size="small"
-                autoComplete="off"
-                variant="outlined"
-                value={cpu.clockspeedTurbo}
-                onClick={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
+        <form onSubmit={handleSubmit}>
+          <Box sx={{ padding: 5 }}>
+            <Typography
+              variant="h5"
+              gutterBottom
+              sx={{ paddingBottom: 5, textAlign: "right" }}
+            >
+              Edit table record
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Brand
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  id="brand"
+                  name="brand"
+                  fullWidth
+                  size="small"
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu?.brand ?? ""}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={error}
+                  helperText={error ? errorMess : ""}
+                />
+              </Grid>
+              {/* {error && <div style={{ color: "red" size="small" }}>{error}</div>} */}
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Model
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  required
+                  id="model"
+                  name="model"
+                  multiline
+                  fullWidth
+                  rows={3}
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu?.model ?? ""}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Cores
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  required
+                  id="coresNum"
+                  name="coresNum"
+                  fullWidth
+                  size="small"
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu?.coresNum ?? ""}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Threads
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  required
+                  id="threadsNum"
+                  name="threadsNum"
+                  fullWidth
+                  size="small"
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu?.threadsNum ?? ""}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Clockspeed
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  required
+                  id="clockspeedBase"
+                  name="clockspeedBase"
+                  fullWidth
+                  size="small"
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu?.clockspeedBase ?? ""}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Turbo clock
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  required
+                  id="clockspeedTurbo"
+                  name="clockspeedTurbo"
+                  fullWidth
+                  size="small"
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu.clockspeedTurbo}
+                  onClick={(e) => handleEdit(e.target.name, e.target.value)}
+                />
+              </Grid>
 
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                TDP
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={10}>
-              <TextField
-                required
-                id="tdp"
-                name="tdp"
-                fullWidth
-                size="small"
-                autoComplete="off"
-                variant="outlined"
-                value={cpu.tdp}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  TDP
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={10}>
+                <TextField
+                  required
+                  id="tdp"
+                  name="tdp"
+                  fullWidth
+                  size="small"
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu.tdp}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                />
+              </Grid>
 
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Socket
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth size="small">
-                {cpu.id !== null && (
-                  <Select
-                    labelId="socketLabel"
-                    id="socket"
-                    name="socket"
-                    onChange={(e) => handleEditForSelect(e.target.value)}
-                  >
-                    {socket.map((item, index) => {
-                      return (
-                        <MenuItem value={{ item }} key={index}>
-                          {item.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                )}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <InputLabel
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  fontWeight: 700,
-                }}
-              >
-                Price
-              </InputLabel>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                required
-                id="price"
-                name="price"
-                fullWidth
-                size="small"
-                autoComplete="off"
-                variant="outlined"
-                value={cpu.price}
-                onChange={(e) => handleEdit(e.target.name, e.target.value)}
-              />
-            </Grid>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Socket
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth size="small">
+                  {cpu.id !== null && (
+                    <Select
+                      labelId="socketLabel"
+                      id="socket"
+                      name="socket"
+                      onChange={(e) => handleEditForSelect(e.target.value)}
+                    >
+                      {socket.map((item, index) => {
+                        return (
+                          <MenuItem value={{ item }} key={index}>
+                            {item.name}
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  )}
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <InputLabel
+                  sx={{
+                    display: "flex",
+                    paddingTop: 1,
+                    justifyContent: "center",
+                    fontWeight: 700,
+                  }}
+                >
+                  Price
+                </InputLabel>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  required
+                  id="price"
+                  name="price"
+                  fullWidth
+                  size="small"
+                  autoComplete="off"
+                  variant="outlined"
+                  value={cpu.price}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                />
+              </Grid>
 
-            <Grid item xs={12} sm={2}></Grid>
-            <Grid item xs={12} sm={6} />
-            <Grid item xs={12} sm={5} />
-            <Grid item xs={12} sm={4}>
-              <Button
-                onClick={alert} //() => updateCpu(id)}
-                variant="contained"
-                sx={{ background: "#2E3B55" }}
-              >
-                Update
-              </Button>
+              <Grid item xs={12} sm={2}></Grid>
+              <Grid item xs={12} sm={6} />
+              <Grid item xs={12} sm={5} />
+              <Grid item xs={12} sm={4}>
+                <button
+                  onClick={validate}
+                  variant="contained"
+                  sx={{
+                    background: "#2E3B55",
+                    display: "flex",
+                    justifyContent: "end",
+                  }}
+                >
+                  Update
+                </button>
+              </Grid>
+              <Grid item xs={12} sm={5} />
             </Grid>
-            <Grid item xs={12} sm={5} />
-          </Grid>
-        </Box>
+          </Box>
+        </form>
       </Paper>
     </React.Fragment>
   );

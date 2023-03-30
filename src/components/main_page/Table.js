@@ -18,14 +18,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-function createData(id, name, calories, fat, history) {
+// DATA FUNCTIONS ------------------------------------------------
+function createData(id, brand, model, socket, history) {
   return {
     id,
-    name,
-    calories,
-    fat,
+    brand,
+    model,
+    socket,
     history: Array.isArray(history)
-      ? history.map((item) => ({
+      ? history.map((item, index) => ({
           date: item.date,
           customerId: item.customerId,
           amount: item.amount,
@@ -37,23 +38,7 @@ function createData(id, name, calories, fat, history) {
   };
 }
 
-export default function CollapsibleTable() {
-  const [cpu, setCpu] = useState([]);
-
-  const getCpuData = () => {
-    try {
-      axios.get("http://localhost:8080/cpu/get-all").then((res) => {
-        setCpu(res.data);
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  useEffect(() => getCpuData(), []);
-
-  const rows = [];
-
+function fillRows(cpu, rows) {
   cpu.map((item, index) => {
     const history = [
       {
@@ -70,6 +55,28 @@ export default function CollapsibleTable() {
       createData(item.id, item.brand, item.model, item.socket.name, history)
     );
   });
+}
+// ------------------------------------------------------------------
+
+export default function CollapsibleTable() {
+  const [cpu, setCpu] = useState([]);
+  const rows = [];
+
+  // HOOKS SECTION ---------------------------------------------------
+  const getCpuData = () => {
+    try {
+      axios.get("http://localhost:8080/cpu/get-all").then((res) => {
+        setCpu(res.data);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => getCpuData(), []);
+  // ------------------------------------------------------------------
+
+  fillRows(cpu, rows);
 
   return (
     <TableContainer component={Paper}>
@@ -84,7 +91,7 @@ export default function CollapsibleTable() {
         </TableHead>
         <TableBody>
           {rows.map((row) => (
-            <Row key={row.name} row={row} state={{ data: cpu }} />
+            <Row key={row.brand} row={row} state={{ data: cpu }} />
           ))}
         </TableBody>
       </Table>
@@ -95,23 +102,6 @@ export default function CollapsibleTable() {
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = useState(false);
-  const [cpu, setCpu] = useState([]);
-
-  const getCpuData = () => {
-    try {
-      axios.get("http://localhost:8080/cpu/get-all").then((res) => {
-        setCpu(res.data);
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  useEffect(() => getCpuData(), []);
-
-  // const handleEdit = (id, brand) = {
-
-  // }
 
   return (
     <React.Fragment>
@@ -126,10 +116,10 @@ function Row(props) {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {row.name}
+          {row.brand}
         </TableCell>
-        <TableCell align="left">{row.calories}</TableCell>
-        <TableCell align="left">{row.fat}</TableCell>
+        <TableCell align="left">{row.model}</TableCell>
+        <TableCell align="left">{row.socket}</TableCell>
         <IconButton
           aria-label="edit"
           style={{ paddingTop: 20 }}
@@ -151,12 +141,12 @@ function Row(props) {
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Base clockspeed</TableCell>
-                    <TableCell>Turbo clockspeed</TableCell>
+                    <TableCell>Base clockspeed [Ghz]</TableCell>
+                    <TableCell>Turbo clockspeed [GHz]</TableCell>
                     <TableCell align="left">Number of cores</TableCell>
                     <TableCell align="left">Number of threads</TableCell>
-                    <TableCell align="left">TDP</TableCell>
-                    <TableCell align="left">EUR</TableCell>
+                    <TableCell align="left">TDP [W]</TableCell>
+                    <TableCell align="left">EUR [€]</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -184,8 +174,9 @@ function Row(props) {
 
 Row.propTypes = {
   row: PropTypes.shape({
-    calories: PropTypes.string.isRequired,
-    fat: PropTypes.string.isRequired,
+    brand: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired,
+    socket: PropTypes.string.isRequired,
     history: PropTypes.arrayOf(
       PropTypes.shape({
         amount: PropTypes.number.isRequired,
