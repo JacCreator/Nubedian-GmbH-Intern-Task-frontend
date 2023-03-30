@@ -89,12 +89,10 @@ export default function AddressForm(props) {
 
   const handleEdit = (name, value) => {
     setCpu({ ...cpu, [name]: value });
-    //setCorrectSubmit(true);
   };
 
   const handleEditForSelect = (value) => {
     setCpu({ ...cpu, socket: value.item });
-    //setCorrectSubmit(true);
   };
   // ------------------------------------------------------------------
 
@@ -525,6 +523,7 @@ export default function AddressForm(props) {
                       labelId="socketLabel"
                       id="socket"
                       name="socket"
+                      value={cpu.socket || ""}
                       onChange={(e) => handleEditForSelect(e.target.value)}
                     >
                       {socket.map((item, index) => {
@@ -570,13 +569,10 @@ export default function AddressForm(props) {
               <Grid item xs={12} sm={5} />
               <Grid item xs={12} sm={4}>
                 <button
+                  class="button-85"
+                  role="button"
                   onClick={updateCpu}
                   variant="contained"
-                  sx={{
-                    background: "#2E3B55",
-                    display: "flex",
-                    justifyContent: "end",
-                  }}
                 >
                   Update
                 </button>
