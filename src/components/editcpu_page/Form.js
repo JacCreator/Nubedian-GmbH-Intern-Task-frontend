@@ -68,25 +68,33 @@ export default function AddressForm(props) {
   // ------------------------------------------------------------------
 
   // EDIT FUNCTIONALITY -----------------------------------------------
-  async function updateCpu() {
-    try {
-      await axios
-        .put(`http://localhost:8080/cpu/update/${id}`, cpu)
-        .then(console.log(cpu));
-    } catch (e) {
-      console.log(e);
+  const [correctSubmit, setCorrectSubmit] = useState(false);
+
+  useEffect(() => {
+    updateCpu();
+  }, [correctSubmit]);
+
+  function updateCpu() {
+    if (correctSubmit) {
+      try {
+        axios
+          .put(`http://localhost:8080/cpu/update/${id}`, cpu)
+          .then(console.log(cpu));
+      } catch (e) {
+        console.log(e);
+      }
+      alert();
     }
-    alert();
   }
 
   const handleEdit = (name, value) => {
     setCpu({ ...cpu, [name]: value });
-    //setErrors(null);
+    //setCorrectSubmit(true);
   };
 
   const handleEditForSelect = (value) => {
     setCpu({ ...cpu, socket: value.item });
-    //setErrors(null);
+    //setCorrectSubmit(true);
   };
   // ------------------------------------------------------------------
 
@@ -117,6 +125,8 @@ export default function AddressForm(props) {
     const stringRegex = new RegExp("[A-Z][a-z]*");
     // ------------
 
+    let key = true;
+
     // brand
     let str = JSON.stringify(cpu.brand).slice(1, -1);
     if (!cpu.brand) {
@@ -125,6 +135,7 @@ export default function AddressForm(props) {
         brand: true,
         brandMess: "Brand name is required.",
       });
+      key = false;
     } else if (!stringRegex.test(str)) {
       setErrors({ ...errors, brand: true });
       setErrors({
@@ -132,6 +143,7 @@ export default function AddressForm(props) {
         brand: true,
         brandMess: "Brand should start with a capital letter and be a word",
       });
+      key = false;
     }
 
     // model
@@ -142,6 +154,7 @@ export default function AddressForm(props) {
         model: true,
         modelMess: "Model name is required.",
       });
+      key = false;
     } else if (!stringRegex.test(str)) {
       setErrors({ ...errors, model: true });
       setErrors({
@@ -149,6 +162,7 @@ export default function AddressForm(props) {
         model: true,
         modelMess: "Model should start with a capital letter and be a word",
       });
+      key = false;
     }
 
     // number regex
@@ -163,6 +177,7 @@ export default function AddressForm(props) {
         cores: true,
         coresMess: "Cores quantity is required.",
       });
+      key = false;
     } else if (num.at(-1) == '"') {
       num = num.slice(1, -1);
       if (!numberRegex.test(parseInt(num))) {
@@ -172,6 +187,7 @@ export default function AddressForm(props) {
           cores: true,
           coresMess: "Cores should be a number",
         });
+        key = false;
       }
     }
 
@@ -183,6 +199,7 @@ export default function AddressForm(props) {
         threads: true,
         threadsMess: "Threads quantity is required.",
       });
+      key = false;
     } else if (num.at(-1) == '"') {
       num = num.slice(1, -1);
       if (!numberRegex.test(parseInt(num))) {
@@ -192,6 +209,7 @@ export default function AddressForm(props) {
           threads: true,
           threadsMess: "Threads should be a number",
         });
+        key = false;
       }
     }
 
@@ -203,6 +221,7 @@ export default function AddressForm(props) {
         clockspeed: true,
         clockspeedMess: "Clockspeed is required.",
       });
+      key = false;
     } else if (num.at(-1) == '"') {
       num = num.slice(1, -1);
       if (!numberRegex.test(num)) {
@@ -212,6 +231,7 @@ export default function AddressForm(props) {
           clockspeed: true,
           clockspeedMess: "Clockspeed should be a number",
         });
+        key = false;
       }
     }
 
@@ -223,6 +243,7 @@ export default function AddressForm(props) {
         turboclock: true,
         turboclockMess: "Turbo clock is required.",
       });
+      key = false;
     } else if (num.at(-1) == '"') {
       num = num.slice(1, -1);
       if (!numberRegex.test(num)) {
@@ -232,6 +253,7 @@ export default function AddressForm(props) {
           turboclock: true,
           turboclockMess: "Turbo clock should be a number",
         });
+        key = false;
       }
     }
 
@@ -243,6 +265,7 @@ export default function AddressForm(props) {
         tdp: true,
         tdpMess: "TDP value is required.",
       });
+      key = false;
     } else if (num.at(-1) == '"') {
       num = num.slice(1, -1);
       if (!numberRegex.test(num)) {
@@ -252,6 +275,7 @@ export default function AddressForm(props) {
           tdp: true,
           tdpMess: "TDP value should be a number",
         });
+        key = false;
       }
     }
 
@@ -263,6 +287,7 @@ export default function AddressForm(props) {
         price: true,
         priceMess: "Price value is required.",
       });
+      key = false;
     } else if (num.at(-1) == '"') {
       num = num.slice(1, -1);
       if (!numberRegex.test(num)) {
@@ -272,11 +297,14 @@ export default function AddressForm(props) {
           price: true,
           priceMess: "Price value should be a number",
         });
+        key = false;
       }
     }
+
+    if (key) setCorrectSubmit(true);
   };
 
-  const validate = () => {};
+  //const validate = () => {};
 
   // ------------------------------------------------------------------
 
@@ -542,7 +570,7 @@ export default function AddressForm(props) {
               <Grid item xs={12} sm={5} />
               <Grid item xs={12} sm={4}>
                 <button
-                  onClick={validate}
+                  onClick={updateCpu}
                   variant="contained"
                   sx={{
                     background: "#2E3B55",
