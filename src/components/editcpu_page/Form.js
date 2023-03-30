@@ -9,13 +9,9 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import Button from "@mui/material/Button";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import * as yup from "yup";
-import { Formik, FormikProps } from "formik";
-import { schema } from "../../validations/CpuValidation";
 
 export default function AddressForm(props) {
   // fetch the cpu's id number from the url
@@ -85,28 +81,198 @@ export default function AddressForm(props) {
 
   const handleEdit = (name, value) => {
     setCpu({ ...cpu, [name]: value });
-    setError(null);
+    //setErrors(null);
   };
 
   const handleEditForSelect = (value) => {
     setCpu({ ...cpu, socket: value.item });
-    setError(null);
+    //setErrors(null);
   };
   // ------------------------------------------------------------------
 
   // VALIDATION -------------------------------------------------------
-  const [error, setError] = useState(false);
-  const [errorMess, setErrorMess] = useState("");
+  const [errors, setErrors] = useState({
+    brand: false,
+    brandMess: "",
+    model: false,
+    modelMess: "",
+    cores: false,
+    coresMess: "",
+    threads: false,
+    threadsMess: "",
+    clockspeed: false,
+    clockspeedMess: "",
+    turboclock: false,
+    turboclockMess: "",
+    tdp: false,
+    tdpMess: "",
+    price: false,
+    priceMess: "",
+  });
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const regex = new RegExp("^[A-Z][a-z]*$");
+
+    // string regex
+    const stringRegex = new RegExp("[A-Z][a-z]*");
+    // ------------
+
+    // brand
+    let str = JSON.stringify(cpu.brand).slice(1, -1);
     if (!cpu.brand) {
-      setError(true);
-      setErrorMess("Brand is required.");
-    } else if (!regex.test(cpu.brand)) {
-      setError(true);
-      setErrorMess("Brand should start with a capital letter and be a word");
+      setErrors({
+        ...errors,
+        brand: true,
+        brandMess: "Brand name is required.",
+      });
+    } else if (!stringRegex.test(str)) {
+      setErrors({ ...errors, brand: true });
+      setErrors({
+        ...errors,
+        brand: true,
+        brandMess: "Brand should start with a capital letter and be a word",
+      });
+    }
+
+    // model
+    str = JSON.stringify(cpu.model).slice(1, -1);
+    if (!cpu.model) {
+      setErrors({
+        ...errors,
+        model: true,
+        modelMess: "Model name is required.",
+      });
+    } else if (!stringRegex.test(str)) {
+      setErrors({ ...errors, model: true });
+      setErrors({
+        ...errors,
+        model: true,
+        modelMess: "Model should start with a capital letter and be a word",
+      });
+    }
+
+    // number regex
+    const numberRegex = new RegExp("\\d+");
+    // ------------
+
+    // cores
+    let num = JSON.stringify(cpu.coresNum);
+    if (cpu.cores == "") {
+      setErrors({
+        ...errors,
+        cores: true,
+        coresMess: "Cores quantity is required.",
+      });
+    } else if (num.at(-1) == '"') {
+      num = num.slice(1, -1);
+      if (!numberRegex.test(parseInt(num))) {
+        setErrors({ ...errors, cores: true });
+        setErrors({
+          ...errors,
+          cores: true,
+          coresMess: "Cores should be a number",
+        });
+      }
+    }
+
+    // threads
+    num = JSON.stringify(cpu.threadsNum);
+    if (cpu.threadsNum == "") {
+      setErrors({
+        ...errors,
+        threads: true,
+        threadsMess: "Threads quantity is required.",
+      });
+    } else if (num.at(-1) == '"') {
+      num = num.slice(1, -1);
+      if (!numberRegex.test(parseInt(num))) {
+        setErrors({ ...errors, threads: true });
+        setErrors({
+          ...errors,
+          threads: true,
+          threadsMess: "Threads should be a number",
+        });
+      }
+    }
+
+    // clockspeed
+    num = JSON.stringify(cpu.clockspeedBase);
+    if (cpu.clockspeedBase == "") {
+      setErrors({
+        ...errors,
+        clockspeed: true,
+        clockspeedMess: "Clockspeed is required.",
+      });
+    } else if (num.at(-1) == '"') {
+      num = num.slice(1, -1);
+      if (!numberRegex.test(num)) {
+        setErrors({ ...errors, clockspeed: true });
+        setErrors({
+          ...errors,
+          clockspeed: true,
+          clockspeedMess: "Clockspeed should be a number",
+        });
+      }
+    }
+
+    // turbo clock
+    num = JSON.stringify(cpu.clockspeedTurbo);
+    if (cpu.clockspeedTurbo == "") {
+      setErrors({
+        ...errors,
+        turboclock: true,
+        turboclockMess: "Turbo clock is required.",
+      });
+    } else if (num.at(-1) == '"') {
+      num = num.slice(1, -1);
+      if (!numberRegex.test(num)) {
+        setErrors({ ...errors, turboclock: true });
+        setErrors({
+          ...errors,
+          turboclock: true,
+          turboclockMess: "Turbo clock should be a number",
+        });
+      }
+    }
+
+    // tdp
+    num = JSON.stringify(cpu.tdp);
+    if (cpu.tdp == "") {
+      setErrors({
+        ...errors,
+        tdp: true,
+        tdpMess: "TDP value is required.",
+      });
+    } else if (num.at(-1) == '"') {
+      num = num.slice(1, -1);
+      if (!numberRegex.test(num)) {
+        setErrors({ ...errors, tdp: true });
+        setErrors({
+          ...errors,
+          tdp: true,
+          tdpMess: "TDP value should be a number",
+        });
+      }
+    }
+
+    // price
+    num = JSON.stringify(cpu.price);
+    if (cpu.price == "") {
+      setErrors({
+        ...errors,
+        price: true,
+        priceMess: "Price value is required.",
+      });
+    } else if (num.at(-1) == '"') {
+      num = num.slice(1, -1);
+      if (!numberRegex.test(num)) {
+        setErrors({ ...errors, price: true });
+        setErrors({
+          ...errors,
+          price: true,
+          priceMess: "Price value should be a number",
+        });
+      }
     }
   };
 
@@ -149,11 +315,10 @@ export default function AddressForm(props) {
                   variant="outlined"
                   value={cpu?.brand ?? ""}
                   onChange={(e) => handleEdit(e.target.name, e.target.value)}
-                  error={error}
-                  helperText={error ? errorMess : ""}
+                  error={errors.brand}
+                  helperText={errors.brand ? errors.brandMess : ""}
                 />
               </Grid>
-              {/* {error && <div style={{ color: "red" size="small" }}>{error}</div>} */}
               <Grid item xs={12} sm={2}>
                 <InputLabel
                   sx={{
@@ -168,7 +333,6 @@ export default function AddressForm(props) {
               </Grid>
               <Grid item xs={12} sm={10}>
                 <TextField
-                  required
                   id="model"
                   name="model"
                   multiline
@@ -178,6 +342,8 @@ export default function AddressForm(props) {
                   variant="outlined"
                   value={cpu?.model ?? ""}
                   onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={errors.model}
+                  helperText={errors.model ? errors.modelMess : ""}
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
@@ -194,7 +360,6 @@ export default function AddressForm(props) {
               </Grid>
               <Grid item xs={12} sm={10}>
                 <TextField
-                  required
                   id="coresNum"
                   name="coresNum"
                   fullWidth
@@ -203,6 +368,8 @@ export default function AddressForm(props) {
                   variant="outlined"
                   value={cpu?.coresNum ?? ""}
                   onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={errors.cores}
+                  helperText={errors.cores ? errors.coresMess : ""}
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
@@ -219,7 +386,6 @@ export default function AddressForm(props) {
               </Grid>
               <Grid item xs={12} sm={10}>
                 <TextField
-                  required
                   id="threadsNum"
                   name="threadsNum"
                   fullWidth
@@ -228,6 +394,8 @@ export default function AddressForm(props) {
                   variant="outlined"
                   value={cpu?.threadsNum ?? ""}
                   onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={errors.threads}
+                  helperText={errors.threads ? errors.threadsMess : ""}
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
@@ -244,7 +412,6 @@ export default function AddressForm(props) {
               </Grid>
               <Grid item xs={12} sm={4}>
                 <TextField
-                  required
                   id="clockspeedBase"
                   name="clockspeedBase"
                   fullWidth
@@ -253,6 +420,8 @@ export default function AddressForm(props) {
                   variant="outlined"
                   value={cpu?.clockspeedBase ?? ""}
                   onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={errors.clockspeed}
+                  helperText={errors.clockspeed ? errors.clockspeedMess : ""}
                 />
               </Grid>
               <Grid item xs={12} sm={2}>
@@ -269,15 +438,16 @@ export default function AddressForm(props) {
               </Grid>
               <Grid item xs={12} sm={4}>
                 <TextField
-                  required
                   id="clockspeedTurbo"
                   name="clockspeedTurbo"
                   fullWidth
                   size="small"
                   autoComplete="off"
                   variant="outlined"
-                  value={cpu.clockspeedTurbo}
-                  onClick={(e) => handleEdit(e.target.name, e.target.value)}
+                  value={cpu?.clockspeedTurbo ?? ""}
+                  onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={errors.turboclock}
+                  helperText={errors.turboclock ? errors.turboclockMess : ""}
                 />
               </Grid>
 
@@ -295,7 +465,6 @@ export default function AddressForm(props) {
               </Grid>
               <Grid item xs={12} sm={10}>
                 <TextField
-                  required
                   id="tdp"
                   name="tdp"
                   fullWidth
@@ -304,6 +473,8 @@ export default function AddressForm(props) {
                   variant="outlined"
                   value={cpu.tdp}
                   onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={errors.tdp}
+                  helperText={errors.tdp ? errors.tdpMess : ""}
                 />
               </Grid>
 
@@ -353,7 +524,6 @@ export default function AddressForm(props) {
               </Grid>
               <Grid item xs={12} sm={4}>
                 <TextField
-                  required
                   id="price"
                   name="price"
                   fullWidth
@@ -362,6 +532,8 @@ export default function AddressForm(props) {
                   variant="outlined"
                   value={cpu.price}
                   onChange={(e) => handleEdit(e.target.name, e.target.value)}
+                  error={errors.price}
+                  helperText={errors.price ? errors.priceMess : ""}
                 />
               </Grid>
 
