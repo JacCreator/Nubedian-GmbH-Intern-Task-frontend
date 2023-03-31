@@ -36,7 +36,7 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 ```
 3. Run initialized data service and Spring Boot application
-4. Go to ...\frontend_react\**cpu-front** dir, open terminal and pass command: ```npm start```
+4. Go to ...\frontend_react\**cpu-front** dir, open terminal and pass command: ```npm install```, and after```npm start```
 
 ## How to use it?
 The application is now running, and you can access it through any browser by typing the URL http://localhost3000. In addition, you can use any API platform to check data by requests.
